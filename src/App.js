@@ -46,13 +46,18 @@ export default function Board() {
   } else {
     status = "Next player: " + (xIsNext ? "X" : "O");
   }
+  // squaresの配列にnullが無かったら、statusをDrawにする
+  if(!squares.includes(null)){
+    status = "Draw";
+  }
+
 
   const box = [];
 
   for (let i=0;i<3;i++){
     box.push(<div className="board-row"></div>);
     for(let j=0; j<3 ;j++){
-      box.push(<Square key={i * 3 + j} value={squares[i * 3 + j]} onSquareClick={() => handleClick(i*3  +j)} />)
+      box.push(<Square key={i * 3 + j} value={squares[i * 3 + j]} onSquareClick={() => handleClick(i*3  +j)} className="square"/>)
     }
   }
   
@@ -82,7 +87,10 @@ function calculateWinner(squares) {
     const [a, b, c] = lines[i];
     // ex) [0,1,2] [X,X,X,O,O,O,O,O,O]
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      // 対応するindexのsquare要素に対してstyle.bakcgroundColor =" yellow"とか設定
+      // Squareコンポーネントのkeyとindexが一致するものに対してstyle.bakcgroundColor =" yellow"を設定
+      document.getElementsByClassName("square")[a].style.backgroundColor = "yellow";
+      document.getElementsByClassName("square")[b].style.backgroundColor = "yellow";
+      document.getElementsByClassName("square")[c].style.backgroundColor = "yellow";
       return squares[a];
     }
   }
