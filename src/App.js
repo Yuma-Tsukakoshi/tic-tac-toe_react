@@ -16,11 +16,7 @@ function Square({value, onSquareClick}){
 }
 
 // propsで渡している変数名で渡す。
-export default function Board() {
-  
-  const [xIsNext, setXIsNext] = useState(true);
-  //9つのマス目に対応する9個のnullを持つ配列を与える
-  const [squares, setSquares] = useState(Array(9).fill(null));
+function Board({xIsNext, squares, onPlay}) {
 
   // slice() 配列メソッドを使って squares 配列のコピー (nextSquares) を作成
   function handleClick(i){
@@ -35,22 +31,22 @@ export default function Board() {
     }else{
       nextSquares[i] = "O";
     }
-    setSquares(nextSquares);
-    setXIsNext(!xIsNext);
+    onPlay(nextSquares);
   }
   
   const winner = calculateWinner(squares);
   let status;
+  
   if (winner) {
     status = "Winner: " + winner;
   } else {
     status = "Next player: " + (xIsNext ? "X" : "O");
   }
+  
   // squaresの配列にnullが無かったら、statusをDrawにする
-  if(!squares.includes(null)){
+  if(!squares.includes(null) && !winner){
     status = "Draw";
   }
-
 
   const box = [];
 
@@ -68,6 +64,53 @@ export default function Board() {
       <div className="status">{status}</div>
       {box}
     </> 
+  );
+}
+
+export default function Game() {
+  // 各マス目が入力された状態を保持する＝9つの配列を作る
+  // [Array(9).fill(null)] は要素数が 1 の配列であり、その唯一の要素が 9 つの null が入った配列となっていることに注意してください。
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const [currentMove, setCurrentMove] = useState(0);
+  const xIsNext = currentMove % 2 === 0;
+  const currentSquares = history[currentMove];
+
+  // ゲーム内容の更新
+  function handlePlay(nextSquares) {
+    // 履歴のうち着手時点までの部分のみが保持
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    // 末尾の最新を参照
+    setCurrentMove(nextHistory.length - 1);
+  }
+
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
+  }
+
+  const moves = history.map((squares, move) => {
+    let description;
+    if (move > 0) {
+      description = 'Go to move #' + move;
+    } else {
+      description = 'Go to game start';
+    }
+    return (
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+    );
+  });
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay}/>
+      </div>
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+    </div>
   );
 }
 
